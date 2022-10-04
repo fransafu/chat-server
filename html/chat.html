@@ -1,3 +1,74 @@
 {{define "content"}}
-<h1>{{.Title}}</h1>
+<div class="row text-center">
+    <h1>{{.Title}}</h1>
+</div>
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-body" id="log">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row gx-5 mt-1">
+    <div class="col">
+        <form class="input-group mb-3" id="form">
+            <input type="text" class="form-control" id="msg" placeholder="Escribe un mensaje..." aria-label="Escribe un mensaje..." aria-describedby="button-send" autofocus />
+            <input class="btn btn-outline-secondary" type="submit" id="button-send" value="Send" />
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+    window.onload = function () {
+        var conn;
+        var msg = document.getElementById("msg");
+        var log = document.getElementById("log");
+    
+        function appendLog(item) {
+            var doScroll = log.scrollTop > log.scrollHeight - log.clientHeight - 1;
+            log.appendChild(item);
+            if (doScroll) {
+                log.scrollTop = log.scrollHeight - log.clientHeight;
+            }
+        }
+    
+        document.getElementById("form").onsubmit = function () {
+            if (!conn || !msg.value) {
+                console.log("[ERROR] conn or message not found");
+                return false;
+            }
+
+            conn.send(msg.value);
+            msg.value = "";
+
+            return false;
+        };
+
+        if (!window["WebSocket"]) {
+            var item = document.createElement("div");
+            item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
+            appendLog(item);
+            return false;
+        }
+    
+        if (window["WebSocket"]) {
+            console.log(`[INFO] websocket URL: ${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${document.location.host}/ws`);
+            conn = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${document.location.host}/ws`);
+            conn.onclose = function (evt) {
+                var item = document.createElement("div");
+                item.innerHTML = "<b>Connection closed.</b>";
+                appendLog(item);
+            };
+            conn.onmessage = function (evt) {
+                var messages = evt.data.split('\n');
+                for (var i = 0; i < messages.length; i++) {
+                    var item = document.createElement("div");
+                    item.innerText = messages[i];
+                    appendLog(item);
+                }
+            };
+        }
+    };
+    </script>
 {{end}}
