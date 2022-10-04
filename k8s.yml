@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-server
+  template:
+    metadata:
+      labels:
+        app: chat-server
+    spec:
+      containers:
+      - image: okteto.dev/chat-server:1.0.2
+        name: chat-server
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-server
+spec:
+  type: ClusterIP
+  ports:
+  - name: "chat-server"
+    port: 8080
+  selector:
+    app: chat-server
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chat-server
+  annotations:
+    dev.okteto.com/generate-host: chat-server
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: chat-server
+            port:
+              number: 8080
+        path: /
+        pathType: ImplementationSpecific

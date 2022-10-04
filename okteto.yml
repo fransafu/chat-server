@@ -1,0 +1,7 @@
+build:
+  chat-server:
+    image: okteto.dev/chat-server:1.0.2
+    context: .
+
+deploy:
+  - kubectl apply -f k8s.yml
